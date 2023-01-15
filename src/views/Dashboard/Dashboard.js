@@ -1,3 +1,12 @@
+// Farm imports
+import Bank from '../Bank';
+import { Route,useRouteMatch} from 'react-router-dom';
+import { Alert } from '@material-ui/lab';
+import FarmCard from './d_FarmCard';
+import useBanks from '../../hooks/useBanks';
+
+
+
 import React, {useCallback, useMemo} from 'react';
 import Page from '../../components/Page';
 import {createGlobalStyle} from 'styled-components';
@@ -11,7 +20,7 @@ import usebShareStats from '../../hooks/usebShareStats';
 
 
 
-import {useRouteMatch} from 'react-router-dom';
+
 import CountUp from 'react-countup';
 import ExchangeCard from '../Bond/components/ExchangeCard';
 import useBombFinance from '../../hooks/useBombFinance';
@@ -34,7 +43,7 @@ import { makeStyles } from '@material-ui/core/styles';
 
 import { Box, Card, CardContent, Button, Typography, Grid } from '@material-ui/core';
 
-import { Alert } from '@material-ui/lab';
+
 
 import UnlockWallet from '../../components/UnlockWallet';
 
@@ -52,6 +61,8 @@ import useClaimRewardCheck from '../../hooks/boardroom/useClaimRewardCheck';
 import useWithdrawCheck from '../../hooks/boardroom/useWithdrawCheck';
 import ProgressCountdown from '../Boardroom/components/ProgressCountdown';
 import { Helmet } from 'react-helmet';
+
+
 
 import HomeImage from '../../assets/img/background.jpg';
 
@@ -162,6 +173,9 @@ const Dashboard: React.FC = () => {
     );
     const tBondTotalSupply = useMemo(() => (tBondStats ? String(tBondStats.totalSupply) : null), [tBondStats]);
   
+    // Farm const
+    const [banks] = useBanks();
+    const activeBanks = banks.filter((bank) => !bank.finished);
 
   return (
     <Page>
@@ -172,8 +186,12 @@ const Dashboard: React.FC = () => {
           <Typography color="textPrimary" align="center" variant="h3" gutterBottom>
             Dashboard
           </Typography>
+                <Typography color="textyellow" align="center" variant="h4" gutterBottom style={{ marginTop: '40px' }}>
+                  Bomb Finance Summary
+                </Typography>
           <Box mt={6}>
             <Grid container justify="center" spacing={3}>
+      
               <Grid item xs={12} md={2} lg={2} className={classes.gridItem}>
                 <Card className={classes.gridItem}>
                   <CardContent style={{ textAlign: 'center' }}>
@@ -352,9 +370,12 @@ const Dashboard: React.FC = () => {
         </Grid>
       </Grid>
 
-
-
-        {!!account ? (
+      {/* Boardroom */}
+      <Typography color="textyellow" align="center" variant="h4" gutterBottom style={{ marginTop: '40px' }}>
+                  Boardroom
+          </Typography>
+      {!!account ? (
+        
             <Box mt={4}>
               <StyledBoardroom>
                 <StyledCardsWrapper>
@@ -371,6 +392,31 @@ const Dashboard: React.FC = () => {
         ) : (
             <UnlockWallet />
         )}
+
+      
+      {/* Farms */}
+      <Route exact path={path}>
+        <div hidden={activeBanks.filter((bank) => bank.sectionInUI === 3).length === 0}>
+
+          {/* <Alert variant="filled" severity="info">
+              <h4>
+                Farms started November 25th 2021 and will continue running for 1 full year.</h4>
+            </Alert> */}
+          <Typography color="textyellow" align="center" variant="h4" gutterBottom style={{ marginTop: '40px' }}>
+                  Bomb Farms
+          </Typography>
+          <Grid container spacing={3} style={{ marginTop: '20px' }}>
+            {activeBanks
+              .filter((bank) => bank.sectionInUI === 3)
+              .map((bank) => (
+                <React.Fragment key={bank.name}>
+                  <FarmCard bank={bank} />
+                </React.Fragment>
+              ))}
+          </Grid>
+        </div>
+      </Route>
+      
 
             {/* <Grid container justify="center" spacing={3}>
             <Grid item xs={4}>
@@ -403,6 +449,9 @@ const Dashboard: React.FC = () => {
           </Grid> */}
           </Box>
 
+        
+
+
         {!!account && (
           <Box mt={5}>
             <Grid container justify="center" spacing={3} mt={10}>
@@ -420,6 +469,7 @@ const Dashboard: React.FC = () => {
             </Grid>
           </Box>
         )}
+        <Box p={3} style={{ textAlign: 'center' }}>
         <StyledBond>
               <StyledCardWrapper>
                 <ExchangeCard
@@ -447,8 +497,8 @@ const Dashboard: React.FC = () => {
                 />
                 <Spacer size="md" />
                 <ExchangeStat
-                  tokenName="10,000 BBOND"
-                  description="Current Price: (BOMB)^2"
+                  tokenName="10,000 BOMB"
+                  description="Live TWAP"
                   price={Number(bondStat?.tokenInFtm).toFixed(4) || '-'}
                 />
               </StyledStatsWrapper>
@@ -466,6 +516,39 @@ const Dashboard: React.FC = () => {
                 />
               </StyledCardWrapper>
             </StyledBond>
+            </Box>
+            <Box p={1} style={{ textAlign: 'center' }}>
+            <p style={{ color: 'green' }}>
+                {/* <IconTelegram alt="telegram" style={{ fill: '#dddfee', height: '15px' }} /> */}
+                Join our{' '}
+                <a
+                  href="https://t.me/bombmoneybsc"
+                  rel="noopener noreferrer"
+                  target="_blank"
+                  style={{ color: '#dddfee' }}
+                >
+                  Telegram
+                </a>{' '}
+                or{' '}
+                <a
+                  href="https://discord.bomb.money"
+                  rel="noopener noreferrer"
+                  target="_blank"
+                  style={{ color: '#dddfee' }}
+                >
+                  Discord
+                </a>{' '}
+                to find out more!
+                <br></br>
+                <Button
+                href="https://bombbshare.medium.com/the-bomb-cycle-how-to-print-forever-e89dc82c12e5"
+                target={'_blank'}
+                className="shinyButton"
+                style={{ margin: '10px' }}>
+                READ Docs
+                </Button>
+              </p>
+            </Box>
     </Page>
     
   );
@@ -487,6 +570,15 @@ const StyledCardsWrapper = styled.div`
     width: 100%;
     flex-flow: column nowrap;
     align-items: center;
+  }
+`;
+
+const StyledBank = styled.div`
+  align-items: center;
+  display: flex;
+  flex-direction: column;
+  @media (max-width: 768px) {
+    width: 100%;
   }
 `;
 
